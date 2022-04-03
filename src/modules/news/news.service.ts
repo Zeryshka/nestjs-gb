@@ -1,4 +1,4 @@
-import { News } from './dto/news.dto';
+import { News } from '../../dto/news.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
 const news: News[] = [
@@ -9,12 +9,20 @@ const news: News[] = [
       'В мире котиков существует один самый красивый котик и его зовут Вася...',
     author: 'Котик Вася',
     createdAt: new Date(Date.now()),
+    comments: [
+      { id: 0, text: 'Крутотень!', createdAt: new Date(Date.now()) },
+      { id: 1, text: 'Вааау!', createdAt: new Date(Date.now()) },
+    ],
   },
 ];
 
 @Injectable()
-export class AppService {
-  async get(id: number): Promise<News | HttpException> {
+export class NewsService {
+  async get(id?: number): Promise<News | News[] | HttpException> {
+    if (id === undefined) {
+      return news;
+    }
+
     if (news[id]) {
       return news[id];
     }
@@ -28,18 +36,14 @@ export class AppService {
     );
   }
 
-  async getAll(): Promise<News[]> {
-    return news;
-  }
-
-  async createNews(data: News): Promise<News[]> {
+  async create(data: News): Promise<News[]> {
     data.id = news.length;
     data.createdAt = new Date(Date.now());
     news.push(data);
     return news;
   }
 
-  async updateNews(id: number, data: News): Promise<News[]> {
+  async update(id: number, data: News): Promise<News[]> {
     if (news[id]) {
       news[id] = {
         ...news[id],
@@ -57,17 +61,8 @@ export class AppService {
     );
   }
 
-  async deleteNews(id: number): Promise<News[]> {
+  async delete(id: number): Promise<News[]> {
     news.splice(id, 1);
     return news;
-  }
-}
-
-@Injectable()
-export class AppCalculator {
-  async plus(numbers: number[]): Promise<number> {
-    return numbers.reduce(function (sum, elem) {
-      return sum + elem;
-    }, 0);
   }
 }
