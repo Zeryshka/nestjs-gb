@@ -1,8 +1,15 @@
 import { Comments } from '../../dto/comments.dto';
 import { News } from 'src/dto/news.dto';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { NewsService } from '../news/news.service';
 import { isArray } from 'util';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Injectable()
 export class CommentsService {
@@ -45,6 +52,7 @@ export class CommentsService {
     if (Object.keys(news).includes('comments')) {
       data.id = news.comments.length;
       data.createdAt = new Date(Date.now());
+      if (!data.attachments) data.attachments = [];
       news.comments.push(data);
       return news;
     }
@@ -112,6 +120,39 @@ export class CommentsService {
     }
 
     news.comments.splice(commentID, 1);
+    return news;
+  }
+
+  async uploadFile(
+    newsID: number,
+    commentID: number,
+    fileName: string,
+  ): Promise<News | HttpException> {
+    const news = await this.newsService.get(newsID);
+
+    if (
+      isArray(news) ||
+      news instanceof HttpException ||
+      newsID < 0 ||
+      newsID === undefined
+    ) {
+      throw new HttpException(
+        `Запись с id ${newsID} не найдена`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    if (
+      Object.keys(news).includes('comments') &&
+      news.comments[commentID] === undefined
+    ) {
+      throw new HttpException(
+        `Комментарий с id ${commentID} не найден`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    news.comments[commentID].attachments.push(fileName);
     return news;
   }
 }

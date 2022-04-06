@@ -8,9 +8,12 @@ import {
   Body,
   Query,
   HttpException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CommentsService } from '../modules/comments/comments.service';
 import { News } from 'src/dto/news.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('comments')
 export class CommentsController {
@@ -46,5 +49,15 @@ export class CommentsController {
     @Query('commentID') commentID: number,
   ): Promise<News | HttpException> {
     return this.commentsService.delete(id, commentID);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAttachment(
+    @Query('id') id: number,
+    @Query('commentID') commentID: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.commentsService.uploadFile(id, commentID, file.filename);
   }
 }
