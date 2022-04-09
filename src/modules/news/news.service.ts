@@ -1,20 +1,7 @@
 import { News } from '../../dto/news.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
-const news: News[] = [
-  {
-    id: 0,
-    title: 'Котики',
-    description:
-      'В мире котиков существует один самый красивый котик и его зовут Вася...',
-    author: 'Котик Вася',
-    createdAt: new Date(Date.now()),
-    comments: [
-      { id: 0, text: 'Крутотень!', createdAt: new Date(Date.now()) },
-      { id: 1, text: 'Вааау!', createdAt: new Date(Date.now()) },
-    ],
-  },
-];
+const news: News[] = [];
 
 @Injectable()
 export class NewsService {
@@ -39,6 +26,7 @@ export class NewsService {
   async create(data: News): Promise<News[]> {
     data.id = news.length;
     data.createdAt = new Date(Date.now());
+    data.comments = [];
     news.push(data);
     return news;
   }
